@@ -1,0 +1,103 @@
+function create_brand_and_model_dropdowns() {
+    // Get all terms from the 'brand' taxonomy
+    $brands = get_terms( array(
+        'taxonomy' => 'brand',
+        'hide_empty' => false,
+    ));
+
+    // Create the Brand dropdown
+    if ( !empty($brands) && !is_wp_error($brands) ) {
+        echo '<label for="brand-dropdown">Brand</label>';
+        echo '<select id="brand-dropdown" name="brand" class="brand-select">';
+        echo '<option value="">Select Brand</option>';
+        foreach ( $brands as $brand ) {
+            echo '<option value="' . esc_attr( $brand->term_id ) . '">' . esc_html( $brand->name ) . '</option>';
+        }
+        echo '</select>';
+    }
+
+    // Empty Model dropdown (will be populated dynamically based on selected brand)
+    echo '<label for="model-dropdown">Model</label>';
+    echo '<select id="model-dropdown" name="model" class="model-select">';
+    echo '<option value="">Select Model</option>'; // Default empty option
+    echo '</select>';
+}
+
+
+
+function ajax_scripts_for_select2() {
+    // Enqueue jQuery and Select2 CSS/JS
+    wp_enqueue_script('jquery');
+    wp_enqueue_style( 'select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css' );
+    wp_enqueue_script( 'select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), null, true );
+
+    // Localize script for AJAX URL
+    wp_localize_script( 'select2-js', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Initialize Select2
+        $('#brand-dropdown').select2();
+        $('#model-dropdown').select2();
+
+        // AJAX call when brand is selected
+        $('#brand-dropdown').on('change', function() {
+            var brandID = $(this).val(); // Get selected brand ID
+
+            if (brandID) {
+                $.ajax({
+                    url: ajax_object.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'get_models_by_brand',
+                        brand_id: brandID
+                    },
+                    success: function(response) {
+                        // Populate the models dropdown with the received data
+                        $('#model-dropdown').html(response).trigger('change');
+                    }
+                });
+            } else {
+                // Reset model dropdown if no brand is selected
+                $('#model-dropdown').html('<option value="">Select Model</option>');
+            }
+        });
+    });
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'ajax_scripts_for_select2', 100 );
+
+
+function get_models_by_brand() {
+    if ( isset( $_POST['brand_id'] ) && !empty( $_POST['brand_id'] ) ) {
+        $brand_id = intval( $_POST['brand_id'] );
+        
+        // Fetch all models (sub-level taxonomy terms) based on selected brand
+        $models = get_terms( array(
+            'taxonomy' => 'model', // Assuming 'model' is the sub-level taxonomy
+            'hide_empty' => false,
+            'meta_query' => array(
+                array(
+                    'key'       => 'parent_brand', // Assuming a custom field 'parent_brand' links models to brands
+                    'value'     => $brand_id,
+                    'compare'   => '='
+                ),
+            ),
+        ));
+
+        // Populate the dropdown with the fetched models
+        if ( !empty( $models ) && !is_wp_error( $models ) ) {
+            foreach ( $models as $model ) {
+                echo '<option value="' . esc_attr( $model->term_id ) . '">' . esc_html( $model->name ) . '</option>';
+            }
+        } else {
+            echo '<option value="">No models available</option>';
+        }
+    }
+
+    wp_die(); // Always die in functions that are called via AJAX
+}
+add_action( 'wp_ajax_get_models_by_brand', 'get_models_by_brand' );
+add_action( 'wp_ajax_nopriv_get_models_by_brand', 'get_models_by_brand' );

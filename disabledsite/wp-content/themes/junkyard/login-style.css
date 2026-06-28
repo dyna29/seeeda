@@ -1,0 +1,56 @@
+/* Background color for the login page */
+body.login {
+    background-color: #185d94; /* Dark green background */
+}
+
+/* Style the login form */
+body.login #login {
+    width: 320px;
+    padding: 20px;
+    margin: 0 auto;
+    background-color: #ffffff; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+	margin-top:60px;
+	margin-bottom:60px;
+}
+
+/* Style the input fields */
+body.login #loginform input[type="text"],
+body.login #loginform input[type="password"] {
+    background-color: #e5ffe5; /* Light green background */
+    border: 1px solid #185d94;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+/* Style the login button */
+body.login .button-primary {
+    background-color: #007700;
+    border-color: #005500;
+    box-shadow: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+/* Change the color of the links */
+body.login #nav a, body.login #backtoblog a {
+    color: #185d94;
+}
+
+/* Custom style for the message box */
+body.login .message {
+    border-left: 4px solid #185d94;
+    background-color: #e5ffe5;
+    color: #185d94;
+}
+
+/* Responsive design for smaller screens */
+@media screen and (max-width: 400px) {
+    body.login #login {
+        width: 95%; /* Adjust width for small screens */
+    }
+}
