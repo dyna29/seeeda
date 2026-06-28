@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Model Popup with Spare Parts Display</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        .model-year, .spare-category, .spare-parts, .back-arrow {
+            display: none;
+            margin-top: 10px;
+        }
+        .back-arrow {
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }.btn-primary:hover {
+    color:  #000 !important;
+    background-color: #fff !important;
+    border-color: #000 !important;
+}.btn-primary {
+    color:  #000 !important;
+    background-color: #fff !important;
+    border-color: #000 !important;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container mt-5 text-center">
+        <h2>Car Brands</h2>
+        <!-- Trigger Button for Popup -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#carModal"><div class="brand-item">
+							<img src="https://wordpress-487847-4907497.cloudwaysapps.com/wp-content/uploads/2024/10/toyota.png">
+							<h4>Toyota</h4>
+						</div></button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="carModal" tabindex="-1" aria-labelledby="carModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="carModalLabel">Select a Toyota Model</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Back Arrow and Selected Item -->
+                    <div class="back-arrow">
+                        <span>&larr; Back to <span id="back-text"></span></span>
+                    </div>
+
+                    <!-- Car Models -->
+                    <div class="list-group" id="model-selection">
+                        <a href="#" class="list-group-item list-group-item-action model-btn" data-model="camry">Camry</a>
+                        <a href="#" class="list-group-item list-group-item-action model-btn" data-model="corolla">Corolla</a>
+                    </div>
+
+                    <!-- Model Years -->
+                    <div class="model-year" id="model-year-selection">
+                        <h5 id="selected-model"></h5>
+                        <button class="btn btn-sm btn-outline-secondary year-btn" data-model="camry" data-year="2018">2018</button>
+                        <button class="btn btn-sm btn-outline-secondary year-btn" data-model="camry" data-year="2019">2019</button>
+                        <button class="btn btn-sm btn-outline-secondary year-btn" data-model="corolla" data-year="2017">2017</button>
+                    </div>
+
+                    <!-- Spare Part Categories -->
+                    <div class="spare-category" id="spareCategory">
+                        <h5 id="selected-year"></h5>
+                        <button class="btn btn-sm btn-outline-success category-btn" data-category="engine">Engine Parts</button>
+                        <button class="btn btn-sm btn-outline-success category-btn" data-category="brakes">Brake System</button>
+                    </div>
+
+                    <!-- Spare Parts -->
+                    <div class="spare-parts" id="spareParts">
+                        <h5>Spare Parts for <span id="displayModelYear"></span></h5>
+                        <ul id="sparePartsList" class="list-group">
+                            <!-- Spare parts will be dynamically loaded here -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery, Bootstrap JS, and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Sample data for spare parts
+        const sparePartsData = {
+            camry: {
+                2018: {
+                    engine: ['Engine Oil', 'Air Filter', 'Timing Belt'],
+                    brakes: ['Brake Pads', 'Brake Discs'],
+                },
+                2019: {
+                    engine: ['Oil Filter', 'Spark Plugs'],
+                    brakes: ['Brake Shoes', 'Brake Fluid'],
+                }
+            },
+            corolla: {
+                2017: {
+                    engine: ['Fuel Pump', 'Water Pump'],
+                    brakes: ['Brake Calipers', 'Rotors'],
+                }
+            }
+        };
+console.log(sparePartsData)
+        $(document).ready(function() {
+            var currentSection = 'models'; // Track the current section for back navigation
+
+            // Handle model selection
+            $('.model-btn').on('click', function(e) {
+                e.preventDefault();
+                var model = $(this).data('model').toLowerCase(); // Ensure model is lowercase
+                currentSection = 'years'; // Switch to the years section
+
+                // Show selected model, hide models, and show years
+                $('#selected-model').text('Model: ' + $(this).text());
+                $('#model-selection').hide();
+                $('#model-year-selection').slideDown();
+                $('#back-text').text('Models');
+                $('.back-arrow').show(); // Show the back arrow
+
+                // Hide all years, then show only the years for the selected model
+                $('#model-year-selection button').hide();
+                $('#model-year-selection button[data-model="' + model + '"]').show();
+            });
+
+            // Handle year selection
+            $('.year-btn').on('click', function() {
+                var model = $(this).data('model').toLowerCase(); // Ensure model is lowercase
+                var year = $(this).data('year');
+                currentSection = 'categories'; // Switch to the categories section
+
+                // Show selected year, hide years, and show spare categories
+                $('#selected-year').text('Model: ' + $('#selected-model').text() + ', Year: ' + year);
+                $('#model-year-selection').hide();
+                $('#spareCategory').slideDown();
+                $('#back-text').text('Years');
+
+                // Store selected model and year for display in spare parts
+                $('#displayModelYear').text($('#selected-model').text() + ', Year: ' + year);
+            });
+
+            // Handle category selection
+            $('.category-btn').on('click', function() {
+                var category = $(this).data('category');
+                var model = $('#selected-model').text().split(': ')[1].toLowerCase(); // Ensure model name is lowercase
+                var year = $('#selected-year').text().split(', Year: ')[1];
+
+console.log(model)
+
+console.log(sparePartsData[model])
+                // Check if spare parts data exists for the selected model and year
+                if (!sparePartsData[model] || !sparePartsData[model][year]) {
+                    alert('No data available for the selected model and year');
+                    return; // Exit if data is missing
+                }
+
+                var spareParts = sparePartsData[model][year][category]; // Get spare parts based on selected model, year, and category
+                
+                // Show spare parts list
+                $('#sparePartsList').empty(); // Clear previous spare parts
+                if (spareParts && spareParts.length > 0) { // Ensure there are spare parts available
+                    $.each(spareParts, function(index, part) {
+                        $('#sparePartsList').append('<li class="list-group-item">'+part + '</li>');
+                    });
+                    $('#spareCategory').hide();
+                    $('#spareParts').slideDown();
+                    $('#back-text').text('Categories');
+                } else {
+                    alert('No spare parts available for this category');
+                }
+            });
+
+            // Back button logic
+            $('.back-arrow').on('click', function() {
+                if (currentSection === 'years') {
+                    $('#model-year-selection').hide();
+                    $('#model-selection').slideDown();
+                    $('.back-arrow').hide(); // Hide back arrow when returning to models
+                    currentSection = 'models';
+                } else if (currentSection === 'categories') {
+                    $('#spareCategory').hide();
+                    $('#model-year-selection').slideDown();
+                    $('#back-text').text('Models');
+                    currentSection = 'years';
+                } else if (currentSection === 'spareParts') {
+                    $('#spareParts').hide();
+                    $('#spareCategory').slideDown();
+                    $('#back-text').text('Years');
+                    currentSection = 'categories';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
